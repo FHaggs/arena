@@ -26,7 +26,7 @@ int main() {
     Region my_region = create_region(1024);  // Create a region with 1024 bytes.
     
     int* arr = (int*)region_alloc(&my_region, 10 * sizeof(int));
-    if (arr) {
+    if (arr != NULL) {
         for (int i = 0; i < 10; i++) {
             arr[i] = i;
         }
