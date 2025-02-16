@@ -1,6 +1,7 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -g
+PROD_CFLAGS = -Wall -Wextra -std=c11 -O2
 
 # Target executable name
 TARGET = region_allocator
@@ -31,6 +32,9 @@ clean:
 # Run the program
 run: $(TARGET)
 	./$(TARGET)
+
+prod: CFLAGS = $(PROD_CFLAGS)
+prod: clean $(TARGET)
 
 .PHONY: all clean run
 
