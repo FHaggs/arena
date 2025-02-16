@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
+
 
 typedef struct {
     size_t count;
@@ -31,11 +33,16 @@ void reset_region(Region* r){
 }
 
 void* region_alloc(Region* r, size_t size){
-    if(size > r->capacity || size + r->count > r->capacity){
+    size_t alignment = sizeof(uintptr_t);
+   
+    // Calculate the aligned size to the next multiple of `alignment` 
+    size_t aligned_size =  (size + (alignment - 1)) & ~(alignment - 1);
+
+    if(aligned_size > r->capacity || aligned_size + r->count > r->capacity){
         return NULL;
     }
     void* data = &r->data[r->count];
-    r->count = r->count + size;
+    r->count = r->count + aligned_size;
     return data;
 }
 Region create_region(size_t capacity){

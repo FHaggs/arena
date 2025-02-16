@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
+#include <string.h>
 #include "arena.h" // Include your region allocator implementation
 
 #define NUM_ELEMENTS 1000000
@@ -73,21 +74,34 @@ void free_wrapper(void* ptr) {
     free(ptr);
 }
 
-int main() {
-    // Initialize region
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <benchmark>\n", argv[0]);
+        printf("Available benchmarks:\n");
+        printf("  malloc       Run malloc/free benchmark\n");
+        printf("  region       Run region allocator benchmark\n");
+        return 1;
+    }
+
+    // Initialize region for region allocator
     my_region = create_region(10 * NUM_ELEMENTS * sizeof(int));
 
     printf("Running benchmarks...\n");
 
-    // Test with malloc/free
-    benchmark_allocator("malloc/free", malloc_wrapper, free_wrapper);
-
-    // Test with region allocator
-    benchmark_allocator("region allocator", region_alloc_wrapper, region_free_wrapper);
+    if (strcmp(argv[1], "malloc") == 0) {
+        // Test with malloc/free
+        benchmark_allocator("malloc/free", malloc_wrapper, free_wrapper);
+    } else if (strcmp(argv[1], "region") == 0) {
+        // Test with region allocator
+        benchmark_allocator("region allocator", region_alloc_wrapper, region_free_wrapper);
+    } else {
+        printf("Unknown benchmark: %s\n", argv[1]);
+        printf("Available benchmarks: malloc, region\n");
+        return 1;
+    }
 
     // Cleanup
     free_region(&my_region);
 
     return 0;
-
 }
