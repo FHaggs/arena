@@ -31,7 +31,7 @@ clean:
 
 # Run the program
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) $(ARGS)
 
 prod: CFLAGS = $(PROD_CFLAGS)
 prod: clean $(TARGET)
