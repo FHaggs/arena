@@ -19,11 +19,13 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 
-typedef struct {
+typedef struct Region {
     size_t count;
     size_t capacity;
-    void* data;	
+    struct Region* next;
+    uintptr_t data[]; // Flexible array member
 } Region;
 
 void reset_region(Region* r){
@@ -38,19 +40,21 @@ void* region_alloc(Region* r, size_t size){
     r->count = r->count + size;
     return data;
 }
-Region create_region(size_t capacity){
+Region* create_region(size_t capacity){
 
-    void* data = malloc(capacity);
-
-    Region r = {
-        .capacity = capacity,
-        .data = data,
-        .count = 0
-    };
+    Region* r = (Region*)malloc(capacity + sizeof(Region));
+    r->capacity = capacity;
+    r->count = 0;
+    r->next = NULL;
     
     return r;
 }
 void free_region(Region* r){
-    free(r->data);
+    free(r);
 }
+
+typedef struct {
+    Region* head;
+    Region* tail;
+} Arena;
 
