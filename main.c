@@ -8,7 +8,7 @@
 #include "arena.h" // Include your region allocator implementation
 
 #define NUM_ELEMENTS 1000000
-#define ITERATIONS 500
+#define ITERATIONS 100
 
 // Function to measure time
 uint64_t get_time_ns() {
@@ -53,27 +53,16 @@ void benchmark_allocator(const char* label, int* (*alloc_func)(size_t), void (*f
     printf("%s: %lu ns\n", label, end_time - start_time);
 }
 
-// Arena wrapper
-Arena my_arena;
-
-int* arena_alloc_wrapper(size_t size) {
-    return (int*)arena_alloc(&my_arena, size);
-}
-
-void arena_free_wrapper(void* ptr) {
-    // Region allocators don't free individual allocations
-    reset_arena(&my_arena);
-}
 // Region allocator wrapper
-Region* my_region;
+Region my_region;
 
 int* region_alloc_wrapper(size_t size) {
-    return (int*)region_alloc(my_region, size);
+    return (int*)region_alloc(&my_region, size);
 }
 
 void region_free_wrapper(void* ptr) {
     // Region allocators don't free individual allocations
-    reset_region(my_region);
+    reset_region(&my_region);
 }
 
 // Malloc wrapper
@@ -96,8 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize region for region allocator
-    my_region = create_region(10 * NUM_ELEMENTS * sizeof(int));
-    my_arena = create_arena(NUM_ELEMENTS * sizeof(int));
+    my_region = create_region(1* NUM_ELEMENTS * sizeof(int));
 
     printf("Running benchmarks...\n");
 
@@ -107,17 +95,20 @@ int main(int argc, char* argv[]) {
     } else if (strcmp(argv[1], "region") == 0) {
         // Test with region allocator
         benchmark_allocator("region allocator", region_alloc_wrapper, region_free_wrapper);
-    } else if (strcmp(argv[1], "arena") == 0) {
-        benchmark_allocator("arena allocator", arena_alloc_wrapper, arena_free_wrapper); 
     } else {
         printf("Unknown benchmark: %s\n", argv[1]);
         printf("Available benchmarks: malloc, region\n");
+
+        Region r = create_region(5 * sizeof(int));
+        for(int i =0;i<10;i++){
+            int* place = (int*)region_alloc(&r, sizeof(int));
+            *place = i;
+        }
         return 1;
     }
 
     // Cleanup
-    free_region(my_region);
-    free_arena(&my_arena);
+    free_region(&my_region);
 
     return 0;
 }
