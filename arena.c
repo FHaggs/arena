@@ -20,13 +20,42 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <sys/types.h>
 
+
+typedef struct Region {
+    size_t count;
+    size_t capacity;
+    struct Region* next;
+    uintptr_t data[]; // Flexible array member
+} Region;
 
 typedef struct {
     size_t count;
-    size_t capacity;
-    void* data;	
-} Region;
+    Region* head;
+    Region* current;
+} Arena;
+
+// Region related functions
+void reset_region(Region* r);
+void* region_alloc(Region* r, size_t size);
+void free_region(Region* r);
+Region* create_region(size_t capacity);
+// Arena related functions
+Arena create_arena(size_t region_capacity);
+void free_arena(Arena* ar);
+void* arena_alloc(Arena* ar, size_t size);
+
+Arena create_arena(size_t region_capacity){
+    Region* genesis_region = create_region(region_capacity);
+
+    Arena ar = {
+        .count = 1,
+        .head  = genesis_region,
+        .current = genesis_region
+    };
+    return ar;
+}
 
 void reset_region(Region* r){
     r->count = 0;
@@ -45,19 +74,22 @@ void* region_alloc(Region* r, size_t size){
     r->count = r->count + aligned_size;
     return data;
 }
-Region create_region(size_t capacity){
+Region* create_region(size_t capacity){
+    size_t alloc_size = (sizeof(uintptr_t) * capacity) + sizeof(Region);
 
-    void* data = malloc(capacity);
+    Region* r = (Region*)malloc(alloc_size);
+    if(r == NULL){
+        printf("Error mallocing region\n");
+        return NULL;    
+    }
 
-    Region r = {
-        .capacity = capacity,
-        .data = data,
-        .count = 0
-    };
+    r->capacity = capacity;
+    r->count = 0;
+    r->next = NULL;
     
     return r;
 }
 void free_region(Region* r){
-    free(r->data);
+    free(r);
 }
 

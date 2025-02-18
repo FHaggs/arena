@@ -21,12 +21,14 @@
 #define ARENA_H
 
 #include <stddef.h> // For size_t
+#include <stdint.h> // For uintptr_t
 
 // Region structure to represent the memory arena
-typedef struct {
-    size_t count;    // Current usage of the arena
-    size_t capacity; // Total capacity of the arena
-    void* data;      // Pointer to the memory block
+typedef struct Region {
+    size_t count;
+    size_t capacity;
+    struct Region* next;
+    uintptr_t data[]; // Flexible array member
 } Region;
 
 /**
@@ -51,7 +53,7 @@ void* region_alloc(Region* r, size_t size);
  * @param capacity The size of the region in bytes.
  * @return A new Region structure.
  */
-Region create_region(size_t capacity);
+Region* create_region(size_t capacity);
 
 /**
  * Free the memory associated with the region.

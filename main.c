@@ -54,15 +54,15 @@ void benchmark_allocator(const char* label, int* (*alloc_func)(size_t), void (*f
 }
 
 // Region allocator wrapper
-Region my_region;
+Region* my_region;
 
 int* region_alloc_wrapper(size_t size) {
-    return (int*)region_alloc(&my_region, size);
+    return (int*)region_alloc(my_region, size);
 }
 
 void region_free_wrapper(void* ptr) {
     // Region allocators don't free individual allocations
-    reset_region(&my_region);
+    reset_region(my_region);
 }
 
 // Malloc wrapper
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Cleanup
-    free_region(&my_region);
+    free_region(my_region);
 
     return 0;
 }
