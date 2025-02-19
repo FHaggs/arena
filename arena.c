@@ -58,14 +58,13 @@ void* arena_alloc(Arena* ar, size_t size){
     if(data == NULL){
         if(ar->current->next == NULL){
             Region* new_region = create_region(ar->current->capacity);
+            ar->current->next = new_region;
             ar->current = new_region;
-            void* new_data = region_alloc(ar->current, size);
-            return new_data;
         }else {
             ar->current = ar->current->next;
-            void* new_data = region_alloc(ar->current, size);
-            return new_data;
         }
+        void* new_data = region_alloc(ar->current, size);
+        return new_data;
     }
     return data;
 

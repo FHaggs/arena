@@ -8,7 +8,7 @@
 #include "arena.h" // Include your region allocator implementation
 
 #define NUM_ELEMENTS 1000000
-#define ITERATIONS 100
+#define ITERATIONS 500
 
 // Function to measure time
 uint64_t get_time_ns() {
