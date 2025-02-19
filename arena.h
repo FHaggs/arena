@@ -1,5 +1,5 @@
 /*
- * arena.h - Header for Simple Arena Allocator Library
+ * arena.h - Header file for Simple Arena Allocator Library
  *
  * Copyright (C) 2025 Pedro Fam Haggstram <pedrofamh@gmail.com>
  *
@@ -20,47 +20,47 @@
 #ifndef ARENA_H
 #define ARENA_H
 
-#include <stddef.h> // For size_t
-#include <stdint.h> // For uintptr_t
+#include <stddef.h>
+#include <stdint.h>
 
-// Region structure to represent the memory arena
-typedef struct Region {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Forward declarations for the structures
+typedef struct Region Region;
+typedef struct Arena Arena;
+
+// Region structure definition
+struct Region {
     size_t count;
     size_t capacity;
-    struct Region* next;
+    Region* next;
     uintptr_t data[]; // Flexible array member
-} Region;
+};
 
-/**
- * Reset the region to reuse allocated memory.
- * 
- * @param r A pointer to the Region structure.
- */
+// Arena structure definition
+struct Arena {
+    size_t count;
+    Region* head;
+    Region* current;
+};
+
+// Region-related functions
 void reset_region(Region* r);
-
-/**
- * Allocate memory from the region.
- * 
- * @param r A pointer to the Region structure.
- * @param size The number of bytes to allocate.
- * @return A pointer to the allocated memory, or NULL if allocation fails.
- */
 void* region_alloc(Region* r, size_t size);
-
-/**
- * Create a new region with the specified capacity.
- * 
- * @param capacity The size of the region in bytes.
- * @return A new Region structure.
- */
+void free_region(Region* r);
 Region* create_region(size_t capacity);
 
-/**
- * Free the memory associated with the region.
- * 
- * @param r A pointer to the Region structure.
- */
-void free_region(Region* r);
+// Arena-related functions
+Arena create_arena(size_t region_capacity);
+void free_arena(Arena* ar);
+void* arena_alloc(Arena* ar, size_t size);
+void reset_arena(Arena* ar);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ARENA_H
 

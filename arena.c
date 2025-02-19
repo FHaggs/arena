@@ -16,25 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "arena.h"
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>
 
-
-typedef struct Region {
-    size_t count;
-    size_t capacity;
-    struct Region* next;
-    uintptr_t data[]; // Flexible array member
-} Region;
-
-typedef struct {
-    size_t count;
-    Region* head;
-    Region* current;
-} Arena;
 
 // Region related functions
 void reset_region(Region* r);
@@ -55,6 +43,41 @@ Arena create_arena(size_t region_capacity){
         .current = genesis_region
     };
     return ar;
+}
+void free_arena(Arena* ar){
+    Region* r = ar->head;
+    while(r != NULL){
+        Region* aux = r->next;
+        free_region(r);
+        r = aux;
+    }
+}
+void* arena_alloc(Arena* ar, size_t size){
+    void* data = region_alloc(ar->current, size);
+
+    if(data == NULL){
+        if(ar->current->next == NULL){
+            Region* new_region = create_region(ar->current->capacity);
+            ar->current = new_region;
+            void* new_data = region_alloc(ar->current, size);
+            return new_data;
+        }else {
+            ar->current = ar->current->next;
+            void* new_data = region_alloc(ar->current, size);
+            return new_data;
+        }
+    }
+    return data;
+
+}
+void reset_arena(Arena* ar){
+    Region* r = ar->head;
+    while(r != NULL){
+        Region* aux = r->next;
+        reset_region(r);
+        r = aux;
+    }
+    ar->current = ar->head;
 }
 
 void reset_region(Region* r){

@@ -53,6 +53,17 @@ void benchmark_allocator(const char* label, int* (*alloc_func)(size_t), void (*f
     printf("%s: %lu ns\n", label, end_time - start_time);
 }
 
+// Arena wrapper
+Arena my_arena;
+
+int* arena_alloc_wrapper(size_t size) {
+    return (int*)arena_alloc(&my_arena, size);
+}
+
+void arena_free_wrapper(void* ptr) {
+    // Region allocators don't free individual allocations
+    reset_arena(&my_arena);
+}
 // Region allocator wrapper
 Region* my_region;
 
@@ -80,11 +91,13 @@ int main(int argc, char* argv[]) {
         printf("Available benchmarks:\n");
         printf("  malloc       Run malloc/free benchmark\n");
         printf("  region       Run region allocator benchmark\n");
+        printf("  arena        Run arena allocator benchmark\n");
         return 1;
     }
 
     // Initialize region for region allocator
     my_region = create_region(10 * NUM_ELEMENTS * sizeof(int));
+    my_arena = create_arena(NUM_ELEMENTS * sizeof(int));
 
     printf("Running benchmarks...\n");
 
@@ -94,6 +107,8 @@ int main(int argc, char* argv[]) {
     } else if (strcmp(argv[1], "region") == 0) {
         // Test with region allocator
         benchmark_allocator("region allocator", region_alloc_wrapper, region_free_wrapper);
+    } else if (strcmp(argv[1], "arena") == 0) {
+        benchmark_allocator("arena allocator", arena_alloc_wrapper, arena_free_wrapper); 
     } else {
         printf("Unknown benchmark: %s\n", argv[1]);
         printf("Available benchmarks: malloc, region\n");
@@ -102,6 +117,7 @@ int main(int argc, char* argv[]) {
 
     // Cleanup
     free_region(my_region);
+    free_arena(&my_arena);
 
     return 0;
 }
