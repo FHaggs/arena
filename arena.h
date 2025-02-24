@@ -28,35 +28,19 @@ extern "C" {
 #endif
 
 // Forward declarations for the structures
-typedef struct Region Region;
-typedef struct Arena Arena;
 
 // Region structure definition
-struct Region {
+typedef struct {
     size_t count;
     size_t capacity;
-    Region* next;
-    uintptr_t data[]; // Flexible array member
-};
-
-// Arena structure definition
-struct Arena {
-    size_t count;
-    Region* head;
-    Region* current;
-};
+    void* data; 
+} Region;
 
 // Region-related functions
 void reset_region(Region* r);
 void* region_alloc(Region* r, size_t size);
 void free_region(Region* r);
-Region* create_region(size_t capacity);
-
-// Arena-related functions
-Arena create_arena(size_t region_capacity);
-void free_arena(Arena* ar);
-void* arena_alloc(Arena* ar, size_t size);
-void reset_arena(Arena* ar);
+Region create_region(size_t capacity);
 
 #ifdef __cplusplus
 }
